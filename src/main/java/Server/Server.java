@@ -284,7 +284,32 @@ public class Server implements Runnable {
                             System.out.println("Запрос к БД на пополнение денег (таблица customer), клиент: " + clientSocket.getInetAddress().toString());
                             String obj = sois.readObject().toString();
                             Customer customer = gson.fromJson(obj,Customer.class);
-                            dao.addMoney(customer);
+                            try(FileWriter writer = new FileWriter("Check.txt", false))
+                            {
+                                // запись всей строки
+                                String str = "You topped up the balance by: " + customer.getMoney()+"$\n OAO 'Farm'";
+                                writer.write(str);
+
+                                writer.flush();
+                            }
+                            catch(IOException ex){
+
+                                System.out.println(ex.getMessage());
+                            }
+                        dao.addMoney(customer);
+                            try(FileReader reader = new FileReader("Check.txt"))
+                            {
+                                // читаем посимвольно
+                                int c;
+                                while((c=reader.read())!=-1){
+
+                                    System.out.print((char)c);
+                                }
+                            }
+                            catch(IOException ex){
+
+                                System.out.println(ex.getMessage());
+                            }
                         }
                         case "ViewProduct" -> {
                             IProductDao dao = new ProductDao();
