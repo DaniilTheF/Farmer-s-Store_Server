@@ -124,4 +124,31 @@ public ArrayList<Cart> getInfoAboutOrder(Cart cart){
     }
     return cartList;
 }
+    public ArrayList<Cart> getCart(){
+        ArrayList<Cart> cartList = new ArrayList();
+        con = ConnectionFactory.getConnection();
+        try {
+            String query = "select p.name as productName, cart.amount as amount from cart" +
+                    "    INNER JOIN orders o on o.id = cart.ordersId" +
+                    "    INNER JOIN person ps on ps.id =  cart.personsId" +
+                    "    INNER JOIN product p on p.id = cart.productId";
+            ps = con.prepareStatement(query);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Cart cart1 = new Cart();
+                cart1.setProductName(rs.getString("productName"));
+                cart1.setAmount(rs.getInt("amount"));
+                cartList.add(cart1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return cartList;
+    }
 }

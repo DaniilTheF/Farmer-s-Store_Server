@@ -120,6 +120,37 @@ public class PersonDao implements IPersonDao {
         }
         return personArrayListList;
     }
+    public ArrayList<Person> fetchAllP() {
+        ArrayList<Person> personArrayListList = new ArrayList<>();
+        con = ConnectionFactory.getConnection();
+        try {
+            String query = "select * from person ";
+            ps = con.prepareStatement(query);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Person person = new Person();
+                person.setId(rs.getInt("id"));
+                person.setName(rs.getString("name"));
+                person.setSurname(rs.getString("surname"));
+                person.setPhone(rs.getString("phone"));
+                person.setLogin(rs.getString("login"));
+                person.setPassword(rs.getString("password"));
+                person.setRole(rs.getString("role"));
+                person.setBanned(rs.getBoolean("banned"));
+                personArrayListList.add(person);
+                //teacherList.getItems().add(teacher); для listView
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return personArrayListList;
+    }
     public Person fetchByLogin(String login) {
         Person person = new Person();
         con = ConnectionFactory.getConnection();
@@ -252,5 +283,36 @@ public class PersonDao implements IPersonDao {
             }
         }
         return person;
+    }
+    public ArrayList<Person> fetchAllBanned(){
+        ArrayList<Person> list = new ArrayList<>();
+        con = ConnectionFactory.getConnection();
+        try {
+            String query = "select * from person "+
+                    "where banned=true;";
+            ps = con.prepareStatement(query);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Person person = new Person();
+                person.setId(rs.getInt("id"));
+                person.setName(rs.getString("name"));
+                person.setSurname(rs.getString("surname"));
+                person.setPhone(rs.getString("phone"));
+                person.setLogin(rs.getString("login"));
+                person.setPassword(rs.getString("password"));
+                person.setRole(rs.getString("role"));
+                person.setBanned(rs.getBoolean("banned"));
+                list.add(person);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return list;
     }
 }

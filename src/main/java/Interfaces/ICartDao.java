@@ -10,6 +10,6 @@ public interface ICartDao {
     public int deleteCart(Cart cart);
     public ArrayList<Cart> getInfoAboutOrder(Cart cart);
     public ArrayList<Product> restoreProducts(Cart product);
-
+    public ArrayList<Cart> getCart();
 
 }

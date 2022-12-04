@@ -40,11 +40,12 @@ public class CustomerDao implements ICustomerDao {
     public int addMoney(Customer customer) {
         con = ConnectionFactory.getConnection();
         try {
-            String query = "UPDATE customer SET  money = money + ? "
+            String query = "UPDATE customer SET  money = money + ?, adress =? "
                     + "where personId=?;";
             ps = con.prepareStatement(query);
             ps.setFloat(1, customer.getMoney());
-            ps.setInt(2, customer.getPersonId());
+            ps.setString(2,customer.getAdress());
+            ps.setInt(3, customer.getPersonId());
             st = ps.executeUpdate();
             System.out.println("inserted customer " + st);
         } catch (SQLSyntaxErrorException e) {

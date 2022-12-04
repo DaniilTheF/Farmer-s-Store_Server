@@ -35,18 +35,6 @@ public class Server implements Runnable {
                     System.out.println(choice);
                     System.out.println("Команда получена");
                     switch (choice) {
-                       /* case "registrationManager" -> {
-                            System.out.println("Запрос к БД на проверку пользователя(таблица teachers), клиент: " + clientSocket.getInetAddress().toString());
-                            Person manager = (Person) sois.readObject();
-                            System.out.println(manager.toString());
-                            IPersonDao dao = new PersonDao();
-                             int res = dao.insert(manager);
-                            if (res != -1 & res != -2) {
-                                soos.writeObject("OK");
-                            } else {
-                                soos.writeObject("Incorrect Data");
-                            }
-                        }*/
                         case "SignUp" -> {
                             IPersonDao dao = new PersonDao();
                             ICustomerDao doc = new CustomerDao();
@@ -55,7 +43,7 @@ public class Server implements Runnable {
                                 soos.writeObject("true");
                                 System.out.println("Запрос к БД на проверку пользователя(таблица person), клиент: " + clientSocket.getInetAddress().toString());
                                 String acc = sois.readObject().toString();
-                                Person customer = gson.fromJson(acc,Person.class);
+                                Person customer = gson. fromJson(acc,Person.class);
                                 System.out.println(customer);
                                 Person person1 = dao.fetchByLogin(customer.getLogin());
                                 if(person1.getId()>0){
@@ -99,13 +87,14 @@ public class Server implements Runnable {
                             Product product1 = dao.fetchByName(product);
                             if(product1.getId()>0){
                                 soos.writeObject("This product is already existed");
-                            }
-                            soos.writeObject("OK");
-                            a = dao.insertProduct(product);
-                            if (a>0) {
+                            }else {
                                 soos.writeObject("OK");
-                            } else {
-                                soos.writeObject("This user is already existed");
+                                a = dao.insertProduct(product);
+                                if (a>0) {
+                                    soos.writeObject("OK");
+                                } else {
+                                    soos.writeObject("This product is already existed");
+                                }
                             }
                         }
                         case "AddPerson" -> {
@@ -130,7 +119,6 @@ public class Server implements Runnable {
                             System.out.println("Запрос к БД на добавление продукта (таблица person), клиент: " + clientSocket.getInetAddress().toString());
                             String acc = sois.readObject().toString();
                             Purchase order = gson.fromJson(acc,Purchase.class);
-                            //проверка на отправленность
                            Purchase purchase =  dap.getPurchasedId(order);
                             if(purchase.getId() > 0){//нет такого оплаченного заказа
                                 soos.writeObject("OK");
@@ -146,9 +134,6 @@ public class Server implements Runnable {
                             }else{
                                 soos.writeObject("gg");
                             }
-
-
-                            //нахождение адресса клиента, занесение в Table sent c адрессом, увеличение count_of_order manager, отправлен true в purchase
                         }
                         case "UpdateProduct" -> {
                             IProductDao dao = new ProductDao();
@@ -156,7 +141,10 @@ public class Server implements Runnable {
                             String acc = sois.readObject().toString();
                             Product product = gson.fromJson(acc,Product.class);
                             int a = 0;
-                            a = dao.updateProduct3(product);
+                            Product product1 = dao.fetchByName(product);
+                            if(!(product1.getId()>0)){
+                                a = dao.updateProduct3(product);
+                            }
                             if (a > 0) {
                                 soos.writeObject("OK");
                             } else {
@@ -171,10 +159,13 @@ public class Server implements Runnable {
                             Person person = dao.fetchById(person1);
                             int a = 0;
                             if(person.getRole().equals("manager")){
-                                a = dao.update(person1);
+                                Person persons = dao.fetchByLogin(person1.getLogin());
+                                if (!(persons.getId() > 0)) {
+                                    a = dao.update(person1);
+                                }
                             }
                             System.out.println(a);
-                            if (a != 0) {
+                            if (a > 0) {
                                 soos.writeObject("OK");
                             } else {
                                 soos.writeObject("This user wasn`t added");
@@ -228,13 +219,40 @@ public class Server implements Runnable {
                                 soos.writeObject("No data");
                             }
                         }
+                        case "ViewPersons" -> {
+                            IPersonDao dao = new PersonDao();
+                            System.out.println("Запрос к БД на вывод пользователей(таблица person), клиент: " + clientSocket.getInetAddress().toString());
+                            ArrayList<Person> list = dao.fetchAllP();
+                            if (list.size() != 0) {
+                                soos.writeObject("OK");
+                                Type fooType = new TypeToken<ArrayList<Person>>() {}.getType();
+                                soos.writeObject(gson.toJson(list, fooType));
+                            } else {
+                                soos.writeObject("No data");
+                            }
+                        }
+                        case "ViewBanned" -> {
+                            IPersonDao dao = new PersonDao();
+                            System.out.println("Запрос к БД на вывод пользователей(таблица person), клиент: " + clientSocket.getInetAddress().toString());
+                            ArrayList<Person> list = dao.fetchAllBanned();
+                            if (list.size() != 0) {
+                                soos.writeObject("OK");
+                                Type fooType = new TypeToken<ArrayList<Person>>() {}.getType();
+                                soos.writeObject(gson.toJson(list, fooType));
+                            } else {
+                                soos.writeObject("No data");
+                            }
+                        }
                          case "NewOrder" -> {
                             IOrderDao dao = new OrderDao();
+                            IHistoryDao day = new HistoryDao();
                             System.out.println("Запрос к БД на вывод заказов(таблица orders), клиент: " + clientSocket.getInetAddress().toString());
                             String obj = sois.readObject().toString();
                             Cart cart = gson.fromJson(obj,Cart.class);
                             dao.insertOrder(cart);
+
                             Orders order = dao.getOrderId();
+                             day.insert(order);
                              System.out.println(order);
                             if (order.getId() != 0) {
                                 soos.writeObject("OK");
@@ -429,6 +447,18 @@ public class Server implements Runnable {
                                 soos.writeObject("No data");
                             }
                         }
+                        case "ViewOrders" -> {
+                            IOrderDao dao = new OrderDao();
+                            System.out.println("Запрос к БД на вывод заказов(таблица orders), клиент: " + clientSocket.getInetAddress().toString());
+                            ArrayList<Orders> list = dao.getAllOrder();
+                            if (list.size() != 0) {
+                                soos.writeObject("OK");
+                                Type fooType = new TypeToken<ArrayList<Orders>>() {}.getType();
+                                soos.writeObject(gson.toJson(list, fooType));
+                            } else {
+                                soos.writeObject("No data");
+                            }
+                        }
                         case "ViewBalance" -> {
                             ICustomerDao dao = new CustomerDao();
                             System.out.println("Запрос к БД на вывод счета (таблица customer), клиент: " + clientSocket.getInetAddress().toString());
@@ -459,11 +489,38 @@ public class Server implements Runnable {
                                 soos.writeObject("No data");
                             }
                         }
+                        case "ViewHistory" -> {
+                            IHistoryDao dao = new HistoryDao();
+                            IPersonDao dac = new PersonDao();
+                            System.out.println("Запрос к БД на вывод оплаченных заказов (таблица purchase), клиент: " + clientSocket.getInetAddress().toString());
+                            String obj = sois.readObject().toString();
+                            Person person = gson.fromJson(obj,Person.class);
+                            ArrayList<History> list = dao.getAll(person);
+                            if (list.size() != 0) {
+                                soos.writeObject("OK");
+                                Type fooType = new TypeToken<ArrayList<History>>() {}.getType();
+                                soos.writeObject(gson.toJson(list, fooType));
+                            } else {
+                                soos.writeObject("No data");
+                            }
+                        }
                         case "ViewPurchases" -> {
                             IPurchaseDao dao = new PurchaseDao();
 
                             System.out.println("Запрос к БД на вывод оплаченных заказов (таблица purchase), клиент: " + clientSocket.getInetAddress().toString());
                             ArrayList<Purchase> list = dao.getPurchase();
+                            if (list.size() != 0) {
+                                soos.writeObject("OK");
+                                Type fooType = new TypeToken<ArrayList<Purchase>>() {}.getType();
+                                soos.writeObject(gson.toJson(list, fooType));
+                            } else {
+                                soos.writeObject("No data");
+                            }
+                        }
+                        case "ViewCart" -> {
+                            ICartDao dao = new CartDao();
+                            System.out.println("Запрос к БД на вывод прод (таблица cart), клиент: " + clientSocket.getInetAddress().toString());
+                            ArrayList<Cart> list = dao.getCart();
                             if (list.size() != 0) {
                                 soos.writeObject("OK");
                                 Type fooType = new TypeToken<ArrayList<Purchase>>() {}.getType();

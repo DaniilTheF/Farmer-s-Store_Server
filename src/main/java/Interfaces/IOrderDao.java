@@ -2,6 +2,7 @@ package Interfaces;
 
 import FarmEntity.*;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 public interface IOrderDao {
@@ -10,7 +11,7 @@ public interface IOrderDao {
 
     public int deleteOrder(Cart order);
     public int updateOrder(Orders order);
-   // public ArrayList<Orders> getAllOrder();
+    public ArrayList<Orders> getAllOrder();
    public Vector<Orders> getAllOrders(Cart cart);
     public Orders getOrderPrice(Orders orders);
 }

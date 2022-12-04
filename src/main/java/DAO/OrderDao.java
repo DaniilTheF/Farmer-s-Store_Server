@@ -64,11 +64,12 @@ public class OrderDao implements IOrderDao {
         Orders order = new Orders();
         con = ConnectionFactory.getConnection();
         try {
-            String query = "select id FROM orders ORDER BY id DESC LIMIT 1;";
+            String query = "select id, personId FROM orders ORDER BY id DESC LIMIT 1;";
             ps = con.prepareStatement(query);
             rs = ps.executeQuery();
             while (rs.next()) {
                 order.setId(rs.getInt("id"));
+                order.setPersonId(rs.getInt("personId"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,6 +138,30 @@ public class OrderDao implements IOrderDao {
                     " where personId =?;";
             ps = con.prepareStatement(query);
             ps.setInt(1,cart.getPersonId());
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Orders orders = new Orders();
+                orders.setId(rs.getInt("id"));
+                orders.setTotal_price(rs.getFloat("total_price"));
+                ordersList.add(orders);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return ordersList;
+    }
+    public ArrayList<Orders> getAllOrder(){
+        ArrayList<Orders> ordersList = new ArrayList();
+        con = ConnectionFactory.getConnection();
+        try {
+            String query = "select id, total_price from orders";
+            ps = con.prepareStatement(query);
             rs = ps.executeQuery();
             while (rs.next()) {
                 Orders orders = new Orders();
